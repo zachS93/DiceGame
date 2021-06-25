@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Craps Game </title>
+    <script>
+
+        function displayGameBoard() {
+
+            let gameBoard = document.getElementById('currentPlay'); // grid layout
+            gameBoard.style.visibility = "visible";
+
+            let elements = document.getElementsByClassName('grid-cell');  // grid layout
+
+            // --- display the nodes in the grid
+            // --- by setting the visibility to 'visible'
+            for ( let i = 0; i < elements.length; i++ ) {
+                elements[i].style.visibility = "visible";
+            }
+            return gameBoard;
+        }
+
+        function displayBetOnBoard( userInput ) {
+
+            let playerBetLabel = document.getElementById('bet'); //<input type="number" id="bet>
+            console.log('Since the user put in a valid entry, we are able to display the gameboard');
+            console.log('This line executes in the displayBetOnBoard() method ( LINE 27 )');
+            console.log(`Placed value in TextField: ${userInput}`);
+            console.log('------------------------------------------------------');
+            playerBetLabel.value = userInput;
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////// * GLOBAL VARIABLES * ///////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        let die = [                                                                                                   //
+            { 'img' : 'Die1.PNG', value: 1 },                                                                         //
+            { 'img' : 'Die2.PNG', value: 2 },                                                                         //
+            { 'img' : 'Die3.PNG', value: 3 },                                                                         //
+            { 'img' : 'Die4.PNG', value: 4 },                                                                         //
+            { 'img' : 'Die5.PNG', value: 5 },                                                                         //
+            { 'img' : 'Die6.PNG', value: 6 }                                                                          //
+        ];                                                                                                            //
+                                                                                                                      //
+                                                                                                                      //
+        // --- Proper Incrementation requires valid input from user                                                   //
+        let buttonClicked = 0; // --- Number of rolls until Game Over                                                 //
+        let purse = 1000;                                                                                             //
+        let rollCount = 0; // --- how many times the dice has been rolled                                             //
+                                                                                                                      //
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        function checkEquality( initial, finalBet ) {
+            if ( initial === finalBet ) {
+                //alert('This verifies the user did not change the bet value');
+                console.log('Inside the checkEquality() method it has been determined: ');
+                console.log(`Both are equal so the user did not change the value of their bet`);
+                console.log(`LINE 59: returning finalBet datatype = ${finalBet}`);
+                console.log('------------------------------------------------------');
+                finalBet =  parseInt(finalBet);
+                //return parsedBetValue;
+            } else {
+                console.log('Inside the checkEquality() method it has been determined: ');
+                console.log('User has changed the field ... validating new input ( LINE 65 )');
+                console.log('------------------------------------------------------');
+
+                // --- This will verify that the new value is valid and does not exceed the user's purse
+                // --- nor will it allow them to input a number <= 0
+                finalBet = validateInput(finalBet);
+            }
+
+            let betErrorField = document.getElementById('errorField'); //<div id="errorField"> Invalid Value </div>
+            if ( finalBet <= 0 || finalBet > purse ) {
+                betErrorField.style.visibility = "visible";
+            } else {
+                betErrorField.style.visibility = "hidden";
+            }
+            // --- Line below checks the value type to ensure functions are passing the correct data type as args
+            //console.log(`LINE: 73 - finalBet: ${typeof finalBet}`);
+            return finalBet;
+        }
+        function checkBetChange() {
+            // --- The initialBet variable will pull the data from the bet field located at the top of the screen
+            // --- outside of the grid field
+            console.log('We are inside the checkBetChange() method to verify'+
+                    ' whether or not the user has changed their bet value');
+            console.log('This line executes on LINE 88');
+            console.log('------------------------------------------------------');
+            let initialBet = document.getElementById('playerBet').textContent; //<h2 id="playerBet"> Bet: </h2>
+            // --- Extract the initial bet value via substring
+            // --- Ensure user did not change the TextField
+            let val = initialBet.substring(initialBet.indexOf(":") + 2,
+                initialBet.length ); // + 2 because of the extra space after ':' sign
+
+            // --- This is the bet TextField located in the grid: r2, c3
+            // --- Ensure user did not change the TextField
+            let betValue = document.getElementById('bet').value; //<input type="number" id="bet">
+
+            //console.log(`LINE: 86 TextField Value: ${betValue}`); // validation purposes
+            //console.log(`LINE: 87 parsedLabel ( val ) Value =${val}`); // validation purposes
+
+            let finalSubmit = checkEquality( val, betValue ); // passing two string args & returning number type
+            //console.log(`LINE 87: finalSubmit = ${typeof finalSubmit}`);
+            return finalSubmit;
+
+        }
+        function showImage() {
+            document.getElementById('graphic').style.visibility = "visible";
+            setTimeout("hide()", 900);
+        }
+
+        function hide() {
+            document.getElementById('graphic').style.visibility = "hidden";
+        }
+
+        function rolled() {
+            let random = Math.floor( Math.random() * 6 ); // --- Random dice value: 1-6
+            let diceValue = die[random];
+            //let diceValue = die[0];  // --- Testing to ensure roll sum of sum value 2 does not make the player lose on the 1st roll
+            console.log('We are currently inside the rolled() method to retrieve dice values ( LINE 121 )');
+            console.log('------------------------------------------------------');
+            return diceValue;
+        }
+
+        function displayDice( dice1, dice2 ) {
+
+            let diceImg1 = document.getElementById('dice1');
+            diceImg1.innerHTML = `<img src='imgs/${dice1.img}' alt='dice_pic' height='50px' width='50px'>`;
+
+            let diceImg2 = document.getElementById('dice2');
+            diceImg2.innerHTML = `<img src='imgs/${dice2.img}' alt='dice_pic' height='50px' width='50px'>`;
+        }
+        function getPurseValue() {
+            let value = document.getElementById('playerPurse'); //<h1 id="playerPurse"> Craps Game Purse: 1000 </h1>
+            let currentPurse = extractLabelValue(value);
+            return currentPurse;
+        }
+        function checkInputField( ) {
+            let userInputField = document.getElementById('bet').value;
+
+            if ( userInputField === null || userInputField === 0 ) {
+                let userInput = askUser();
+                resetGameField();
+            }
+
+        }
+        function alignMessageArea() {
+            let messageContent = document.getElementById('messageArea');
+            messageContent.style.textAlign = "center";
+        }
+        function startGame() {
+            //resetGameField();
+            console.log('User has clicked the start Game Function');
+            let currentPurse = getPurseValue();
+            purse = currentPurse;
+            console.log('As Of right now, the current purse value is ' + currentPurse);
+            console.log('This executes on LINE 154');
+            console.log('------------------------------------------------------');
+
+            alignMessageArea();
+            checkInputField();
+
+            if ( currentPurse <= 0 ) {
+                alert('You ran out of money so ... GAME OVER!!!');
+                startOver();
+                throw new Error('User is trying to play the game with a negative purse');
+            }
+
+            // --- Variable to collect the score the user must obtain in order to win
+            let score = 0;
+            // --- Check if the user changed the bet value when they click the button
+            let betValue = checkBetChange();
+
+            // --- Random dice value selection
+            let dice1 = rolled();
+            let dice2 = rolled();
+
+            // --- boolean variable to validate user has input an appropriate bet
+            // --- In case, if the user decides to change their bet
+            // --- it will dynamically display on the Bet Label
+            let betValid = ( betValue <= purse ) && ( betValue > 0 );
+
+            // --- Game runs as long as validation of bet & guess fields are cleared
+            if ( betValid ) {
+                buttonClicked++; // --- this value is held for validation purposes
+                rollCount++; // --- count all the valid rolls when user clicks the button
+                showImage(); // --- This displays the graphic gif image
+                displayDice(dice1, dice2); // --- display the dice values on the screen
+                score = getScore(dice1, dice2); // --- get total sum of dice rolled
+            } else {
+                let userInput = askUser();
+                let newInput = validateInput(userInput);
+                displayBetOnBoard(newInput)
+                displayBet(newInput);
+            }
+
+            displayScore( score );
+            displayRollCount( );
+
+            // --- see how many times the variable has been '++' incremented
+            // --- The increment is not processed if either the bet AND guess fields evaluate to false
+            console.log(`buttonClicked=${buttonClicked}`);
+            // --- This block will preserve the first roll value
+            // --- Two clicks of validation must occur for the 'buttonClicked' value to be incremented
+            // --- 1) User must put a valid input into the alert box before the gameboard is displayed
+            // --- 2) Any fields changed must be valid when the 'start' button is clicked
+            if ( buttonClicked == 1 ) { // --- This block will preserve the original roll value
+                let winningRoll = document.getElementById('playerWin');  //<h2 id="playerWin"> to Make: </h2>
+                winningRoll.innerHTML = `to Make: ${score}`;
+            }
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ////////////////// Determine if the player has won or lost /////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            let gameWon = wonGame( score ); // ---  gameWon: returns true/false | score = sum of the 2 dice rolled
+            let extractedValue = document.getElementById('playerWin'); // --- number extracted from the Label for toMake label
+            extractedValue = extractLabelValue( extractedValue ); // --- Grab the numeric value from 'playerWin' id field
+            //purse = extractLabelValue(purse);
+            //let purseValue = document.getElementById('playerPurse');
+            //purseValue = extractLabelValue(purseValue);
+            //console.log(`Flag1 ------------------------------------------- gameWon:${gameWon}`);
+            if ( gameWon ) {
+                let winningPurse = addWin( );
+                // toDo: display the win on the scoreboard ---Pass---
+                displayPurseValue( winningPurse ); // --- add the value bet to the winner's purse
+                //resetGameField();
+
+            } else {
+                //let scoreToMake = score;
+                let gameOver =  keepRolling( score );
+                console.log(`Line 226 ----------------------- gameOver:${gameOver}`);
+                if ( gameOver ) {
+                    // toDo: Display a message indicating the user has lost the round
+                    // toDO: subtract the bet from the purse
+                    console.log(`This test is true in order for this code block to run`);
+                    //deductFromPurse();
+                    subtractFromPurse();
+                    //displayLosingMessage();
+
+                } else {
+                    // --- Checking to see if the variable: scoreToMake is within the scope
+                    console.log(`LINE 224 = scoreToMake:${score}`); //scoreToMake
+                    validateWin( score );  //scoreToMake
+                    //resetGameField( );  //gameOver
+                }
+            }
+        }
+        function resetGameField() {
+            let bet = document.getElementById('playerBet'); //<h2 id="playerBet"> Bet: </h2>
+            bet.innerHTML = "Bet: ";
+
+            let toMake = document.getElementById('playerWin');  //<h2 id="playerWin"> to Make: </h2>
+            toMake.innerHTML = "to Make: ";
+
+            let betInput = document.getElementById('bet');  //<input type="number" id="bet">
+            betInput.value = null;
+
+            let scoreField = document.getElementById('dieResults');
+            scoreField.innerHTML = "Die Results";
+
+            let messageField = document.getElementById('messageArea');
+            messageField.innerHTML = "";
+
+            let die1 = document.getElementById('dice1');
+            die1.innerHTML = "Die 1";
+
+            let die2 = document.getElementById('dice2');
+            die2.innerHTML = "Die 2";
+
+        }
+        function validateWin( score ) {
+            // the score of original roll
+            let toMakeLabelVal = document.getElementById('playerWin'); //<h2 id="playerWin"> to Make: </h2>
+            let winValue = extractLabelValue( toMakeLabelVal ); // --- extract numeric value from to Make: label
+            // --- pulling the value from the 1st roll
+            //console.log(`LINE 208 = winValue:${winValue}`);
+            //console.log(`LINE 209 = winValue:${score}`);
+
+            // --- Verifying same data types
+            let comparison = typeof winValue === typeof score;
+            console.log(`Line 274 = comparison:${comparison}`);
+            //console.log(`LINE 194 = winValue:${typeof winValue}`);
+
+            if ( ( winValue === score ) && ( buttonClicked != 1 ) ) { //&& ( buttonClicked != 1 )
+                let winningBet = addWin();
+                displayPurseValue( winningBet );
+                //resetGameField( );
+            }
+
+        }
+        function keepRolling( scoreToMake ) {
+            let lose = false;
+
+            // --- If user rolls any of these values, they lose!!!
+            let loseArray = [ 2, 7, 11 ];
+
+            //<h2 id="playerWin"> to Make: </h2>
+            let toMakeVal = document.getElementById('playerWin');
+            let makeValue = extractLabelValue( toMakeVal ); // --- If the point ( toMakeValue == 2 ) player will win
+            for ( let i = 0; i < loseArray.length; i++ ) {
+                // --- buttonClicked validation is used in case the user rolls a value
+                // --- of 2 on the first try. In this case the game continues and
+                // --- the point is a value of 2
+                if ( scoreToMake == loseArray[i] &&
+                    buttonClicked != 1 && makeValue != 2 ) {
+                    lose = true;
+                    console.log(`Found the loosing score @pos:${i}`);
+                   // ******* UNCOMMENT next 2 lines ********
+                   //  subtractFromPurse();
+                   //  break;
+                   return lose;
+                }
+                // --- Printing the value to the console
+                console.log(`Has Lost: ${lose}`);
+                displayKeepRolling( lose );
+            }
+            return lose;
+        }
+
+        function displayKeepRolling( lose ) {
+            let keepRollingDisplay = document.getElementById('messageArea');
+            if ( lose === false ) {
+                //let keepRollingDisplay = document.getElementById('messageArea');
+                keepRollingDisplay.innerHTML = "Keep Rolling";
+                keepRollingDisplay.style.color = "#0000FF";
+            }
+        }
+        function addWin( ) {
+            let purseValue = document.getElementById('playerPurse'); // h1 tag in HTML located at top of screen
+            let winningBet = document.getElementById('playerBet'); // bet label located at top of screen
+            winningBet = extractLabelValue(winningBet); // Extract Numeric Value from 'playerPurse' label
+            purseValue = extractLabelValue(purseValue); // Extract Numeric Value from 'playerBet' label
+            purseValue += winningBet;
+            return purseValue;
+
+        }
+        function displayPurseValue( winningPurse ) {
+            let purseLabel = document.getElementById('playerPurse');  //<h1 id="playerPurse"> Craps Game Purse: 1000 </h1>
+            purseLabel.innerHTML = 'Craps Game Purse: ' + winningPurse;
+            purse = winningPurse; // --- Set the New purse value
+            displayWinningMessage();
+            addToScoreBoard();
+        }
+        function addToScoreBoard() {
+            let winField = document.getElementById('wins');  //Wins: <span id="wins"> 0 </span>
+            let winFieldValue = extractLabelValue(winField);
+            winFieldValue++;
+            console.log(`----------------- winFieldValue:${winFieldValue} ----------------- LINE 337`);
+            console.log('--------------------------------------------');
+            winField.innerHTML = winFieldValue.toString();
+
+        }
+
+        function displayWinningMessage() {
+            let winningMessage = document.getElementById('messageArea');
+            winningMessage.innerHTML = "Congratulations!!!";
+            winningMessage.style.color = "#008000";
+            let bet = document.getElementById('playerBet');
+            let betValue = extractLabelValue(bet);
+            displayImage( winningMessage );
+            alert(`Congratulations!!! You've earned: ${betValue}`);
+            let userI = askUser();
+            displayBet( userI );
+            displayBetOnBoard( userI );
+            resetToMakeLabel();
+        }
+        function displayImage( winningMessage ) {
+            let img = document.createElement('img');
+            img.src = 'imgs/winner.png';
+            img.width = 100;
+            img.height = 100;
+            winningMessage.appendChild(img);
+        }
+        function resetToMakeLabel() {
+            let label = document.getElementById('playerWin');
+            label.innerHTML = "to Make: ";
+            buttonClicked = 0;
+        }
+        function subtractFromPurse() {
+            let purseValue = document.getElementById('playerPurse');
+            let deduction = extractLabelValue(purseValue);
+
+            let playerBet = document.getElementById('playerBet');
+            let betValue = extractLabelValue(playerBet);
+
+            let newTotal = deduction - betValue;
+            console.log('Attempting to change the validation on LINE 387');
+
+            addLossToScoreBoard( );
+            if ( newTotal <= 0 ) {
+                console.log(`User has no more money to bet`);
+                console.log(`So ... GAME OVER!!!`);
+                displayGameOverMessage();
+            } else {
+                displayLosingMessage();
+            }
+            purseValue.innerHTML = `Craps Game Purse: ${newTotal}`;
+            //displayLosingMessage();
+        }
+        function addLossToScoreBoard( ) {
+            let lossField = document.getElementById('loss');
+            let lossValue = extractLabelValue(lossField);
+            lossValue++;
+            lossField.innerHTML = lossValue.toString();
+        }
+        function extractLabelValue(domObjValue) {
+            let extracted = 0;
+            let labelValue = domObjValue.textContent;
+            let indexPosition = labelValue.indexOf(":");
+            let extracting = labelValue.substring(indexPosition + 1,
+                labelValue.length);
+            if ( extracting.charAt(0) === ' ' ) {
+                let trimming = extracting.trim();
+                extracted = parseInt(trimming);
+            } else {
+                extracted = parseInt(extracting);
+            }
+            return extracted;
+        }
+
+        function displayGameOverMessage() {
+            // toDo: display a losing picture at the bottom of the grid r2, c2
+            let losingMessage = document.getElementById('messageArea');
+            losingMessage.innerHTML = "Looser!!!";
+            losingMessage.style.color = "#EB1C1C";
+            losingMessage.style.textAlign = "left";
+
+            let picture = document.createElement('img');
+            picture.src = "imgs/loser.PNG";
+            let img = document.getElementById('messageArea');
+            picture.width = 150;
+            picture.height = 150;
+            img.appendChild(picture);
+
+            let bustedPicture = document.createElement('img');
+            bustedPicture.src = "imgs/busted.jpg";
+            bustedPicture.width = 65;
+            bustedPicture.height = 45;
+            img.appendChild(bustedPicture);
+        }
+
+        function displayLosingMessage() {
+            // toDo: display a losing picture at the bottom of the grid r2, c2
+            let losingMessage = document.getElementById('messageArea');
+            losingMessage.innerHTML = "Looser!!!";
+            losingMessage.style.color = "#EB1C1C";
+
+            let picture = document.createElement('img');
+            picture.src = "imgs/loser.PNG";
+            let img = document.getElementById('messageArea');
+            picture.width = 150;
+            picture.height = 150;
+            img.appendChild(picture);
+
+            alert('Sorry, you lost this round');
+            let user = askUser();
+            displayBet( user );
+            displayBetOnBoard( user );
+            resetToMakeLabel();
+
+        }
+
+        function wonGame( score ) {
+            let won = false;
+            //console.log(`User's score: ${score} ON LINE: 159`);
+            console.log("We are in the wonGame() function to see if" +
+                    " the user has rolled the correct number on the 1st attempt");
+            console.log("This executes on LINE 398");
+            console.log('------------------------------------------------------');
+            let winningScore = document.getElementById('playerWin'); //<h2 id="playerWin"> to Make: </h2>
+            let numToWin = extractLabelValue(winningScore);
+            //console.log(`Score to win is:${numToWin}`);
+            //let winValue = parseInt( numToWin );
+            won = checkResults( numToWin ); // winValue
+
+            //console.log(`won variable value: ${ won }`);
+            return won;
+        }
+        function checkResults(winValue) {
+            let hasWon = false;
+            if ( winValue === 7 || winValue === 11 ) {
+                hasWon = true;
+            }
+            return hasWon;
+        }
+        function displayRollCount() {
+            document.getElementById('rolls').innerHTML = rollCount;
+
+        }
+        function displayScore(score) {
+            console.log("We've entered into the displayScore() method");
+            let display = document.getElementById('dieResults'); //<div class="grid-cell" id="dieResults"> Die Results </div>
+            if ( score > 0 ) {
+                display.innerHTML = `Score: ${score}`;
+                console.log(`Dice Score: ${score} is executing on LINE 437`);
+                console.log('------------------------------------------------------');
+            } else {
+                display.innerHTML = `Error has occurred `;
+                console.log("There is an error one LINE 441");
+                console.log('------------------------------------------------------');
+            }
+        }
+        function getScore(dice1, dice2) {
+            let totalScore = dice1.value + dice2.value;
+            console.log(`Value of d1:${dice1.value}`);
+            console.log(`Value of d2:${dice2.value}`);
+
+            console.log(`Total Roll Value: ${totalScore} on LINE: 417`);
+            console.log('------------------------------------------------------');
+            return totalScore;
+        }
+        function start() {
+
+            let input = askUser();
+            let isValid = input > 0 && input <= purse;
+
+            if ( isValid ) { // --- check the user's input is in the valid range of purse before setting up gameboard
+                let gameBoard = displayGameBoard(); // --- object document.getElementById
+                displayBetOnBoard( input );
+            }
+        }
+        function askUser() {
+            let userInput = prompt("Enter a value you would like to place for a bet");
+            console.log('We are currently in the askUser() function');
+            console.log('After the start button is clicked, we first ask the user to input a number to bet ( LINE 467 )');
+            console.log('------------------------------------------------------');
+            let userValue = validateInput( userInput ); // --- validates the userInput field is a valid number
+            return userValue;
+        }
+
+        function validateInput( userInput ) {  // -- userInput = String object
+            let isNumber = true; // --- Test to validate user is inputting valid data
+            //console.log(`FUNCTION: validateInput( ${typeof userInput} ) `);
+            // --- Validate only numbers are in the userInput's args ( data type is String at this point )
+            for ( let i = 0; i < userInput.length; i++ ) {
+                // --- If the string contains anything other than a numeric value
+                // --- AND if the string starts with '-' ... Output error message
+                if ( isNaN(userInput.charAt(i)) && userInput.charAt(0) !== "-" ) {
+                    alert('NUMBERS ONLY PLEASE (Meaning only whole integers)');
+                    isNumber = false;
+                    break;
+                } else if ( userInput.charAt(i) === "-" && userInput.length <= 1 ) { // <=
+                    alert("The symbol '-' must be followed by a number");
+                    //break;
+                    return;
+                }
+            }
+
+            // --- Validate User did not leave the TextField Blank ( Returns Boolean )
+            let checkBlank = checkIfBlank( userInput );
+
+            // --- control the display of the start button
+            let btn = document.getElementById('playGame'); //<button id="playGame" onclick="start()"> Start </button>
+            let numberValue = 0; // --- if everything checks out, parse the user's input as an int data type
+            if ( isNumber && !checkBlank ) { // --- both statements must evaluate to true in order to execute
+                numberValue = parseInt(userInput);
+                if ( numberValue <= 0 ) {
+                    alert('Input must be greater than 0');
+                } else if ( numberValue > purse ) {
+                    alert('You cannot bet more money than you currently have');
+                    throw new Error('User cannot start a game with a higher bet than their purse value');
+                } else {
+                    //buttonClicked++;
+                    // --- make the start button disappear as soon as the user inputs valid number
+                    btn.style.display = "none"; // --- if everything is accurate, allow btn to disappear
+                    displayBet( userInput ); // --- Display User's Bet in bet field.
+                }
+            }
+            console.log(`This line executes in the validateInput() function on LINE 510`);
+            console.log(`Button clicked: ${buttonClicked} times`);
+            console.log('------------------------------------------------------');
+            return numberValue;
+        }
+
+        function checkIfBlank( input ) {
+            let isBlank = false;
+            if ( input.length === 0 ) {
+                alert('You cannot leave this field EMPTY');
+                isBlank = true;
+            }
+            return isBlank;
+        }
+
+        function displayBet( inputValue ) {
+            let betValue = parseInt(inputValue);
+            let betDisplay = document.getElementById('playerBet'); //<h2 id="playerBet"> Bet: </h2>
+            betDisplay.innerHTML = `Bet: ${ betValue }`;
+
+        }
+
+        function startOver() {
+
+            // Collect Labels ( Header & Div Tags via HTML )
+            let purseField = document.getElementById('playerPurse');
+            let betField = document.getElementById('playerBet');
+            let dieResults = document.getElementById('dieResults');
+            clearLabels(purseField, betField, dieResults);
+
+
+            // ToDo: clear the grid of all input data
+            let betTextField = document.getElementById('bet');
+            let dice1Field = document.getElementById('dice1');
+            let dice2Field = document.getElementById('dice2');
+            let betLabel = document.getElementById('errorField');
+            let messageLabel = document.getElementById('messageArea');
+
+            clearGrids(betTextField, dice1Field,
+                dice2Field, messageLabel, betLabel
+            );
+
+            // ToDo: clear the scoreboard ( Bar at the bottom of the screen )
+            let rollCountField = document.getElementById('rolls');
+            let winsCountField = document.getElementById('wins');
+            let lossCountField = document.getElementById('loss');
+            clearScoreBoard( rollCountField, winsCountField,
+                    lossCountField );
+            clearOutsideGridLabels();
+            function clearScoreBoard( rollCountField, wins, loss ) {
+                buttonClicked = 0;
+                rollCount = 0;
+                rollCountField.innerHTML = rollCount;
+
+                wins.innerHTML = 0;
+                loss.innerHTML = 0;
+            }
+
+            function clearOutsideGridLabels() {
+                let betLabel = document.getElementById('playerBet');
+                betLabel.innerHTML = "Bet: ";
+
+                let toMakeLabel = document.getElementById('playerWin');
+                toMakeLabel.innerHTML = "to Make: "
+
+            }
+        }
+
+        function clearLabels( purse, bet, results ) {
+            purse.innerHTML = "Craps Game Purse: 1000";
+            bet.innerHTML = "Bet: ";
+            results.innerHTML = "Die Results";
+        }
+
+        function clearGrids( bet, die1, die2, message, betLabel ) {
+            bet.value = null;
+            die1.innerHTML = "Die 1";
+            die2.innerHTML = "Die 2";
+            message.innerHTML = "";
+            betLabel.style.visibility = "hidden";
+        }
+
+    </script>
+    <style>
+        #playerBet {
+            display: inline;
+        }
+        #playerWin {
+            display: inline;
+        }
+
+        #bet {
+            width: 75px;
+        }
+
+        #currentPlay {
+            visibility: hidden;
+            display: grid;
+            grid-template-columns: 25% 25% 25%;
+            grid-template-rows: 80px 200px 15%;
+            text-align: center;
+            font-size: 30px;
+            grid-gap: 10px;
+            padding: 20px 0;
+            width: 950px;
+        }
+
+        .grid-cell {
+            background-color: #FFFF00;
+            visibility: hidden;
+            border: 1px solid black;
+        }
+        #graphic {
+            visibility: hidden;
+            height: 50px;
+            width: 50px;
+        }
+
+        #setup {
+            visibility: visible;
+        }
+
+        #errorField {
+            visibility: hidden;
+            color: #800000;
+        }
+
+        #start {
+            background-color: #33b5e5;
+            font-size: 20px;
+        }
+        #clear {
+            background-color: #d9e9ff;
+        }
+
+        #winnings {
+            grid-column: 1 / span 3;
+            /* width: 733px; */
+            width: 705px;
+            background-color: #FFFF00;
+            text-align: left;
+            border: 1px solid black;
+            padding-left: 25px;
+        }
+        /*
+        #simpson {
+            visibility: hidden;
+            height: 150px;
+            width: 150px;
+            margin-top: 5px;
+        }
+         */
+        #messageArea {
+            visibility: hidden;
+            text-align: center;
+            /*font-size: 0;*/
+            color: #EB1C1C;
+        }
+        #rolls, #wins, #loss, #res {
+            height: 60px;
+            width: 60px;
+            border: 1px solid black;
+            background-color: #bbbbbb;
+            font-size: 19px;
+        }
+        #dice1 {
+            padding-top: 15px;
+        }
+        #dice2 {
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<h1 id="playerPurse"> Craps Game Purse: 1000 </h1> <br /> <br />
+
+<div><img src="imgs/rollin_die.gif" alt="rolling_dice" id="graphic"></div>
+
+<div>
+    <h2 id="playerBet"> Bet: </h2>
+    <h2 id="playerWin"> to Make: </h2>
+</div>
+
+<div id="setup">
+    <button id="playGame" onclick="start()"> Start </button>
+</div>
+<div id="currentPlay">
+    <div class="grid-cell" id="dice1"> Die 1 </div>
+    <div class="grid-cell" id="dice2"> Die 2 </div>
+    <div class="grid-cell">
+        <button class="grid-cell" id="start" onclick="startGame()">Roll Die</button>
+        <button class="grid-cell" id="clear" onclick="startOver()">clear</button>
+    </div>
+    <div class="grid-cell" id="dieResults"> Die Results </div>
+    <div class="grid-cell" id="messageArea">
+        <!-- <img id="simpson" src="imgs/loser.PNG" alt="Loser IMG"> -->
+    </div>
+    <div class="grid-cell" id="betArea"> Bet:
+        <input type="number" id="bet">
+        <div id="errorField"> Invalid Value </div>
+    </div>
+    <div id="winnings">
+        Rolls: <span id="rolls"> 0 </span>
+        Wins: <span id="wins"> 0 </span>
+        Loss: <span id="loss"> 0 </span>
+    </div>
+
+</div>
+
+</body>
+</html>
