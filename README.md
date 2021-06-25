@@ -1,4 +1,4 @@
-# DiceGame 
+# DiceGame Project
 
 Craps Game
 -----------
